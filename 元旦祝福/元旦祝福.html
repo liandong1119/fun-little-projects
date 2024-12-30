@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>喜迎2025年元旦</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+            cursor: pointer;
+            overscroll-behavior: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            z-index: 2;
+        }
+
+        .container.show {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+        }
+
+        .main-title {
+            font-size: clamp(3rem, 15vw, 8rem);
+            margin-bottom: clamp(1rem, 3vh, 2rem);
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: rainbow 20s linear infinite;
+            background-size: 400%;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            transform: scale(1);
+            transition: transform 0.3s;
+            cursor: pointer;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+            position: relative;
+        }
+
+        .main-title:hover {
+            transform: scale(1.1);
+        }
+
+        .wishes {
+            margin: clamp(1rem, 3vh, 2rem) 0;
+            perspective: 1000px;
+        }
+
+        .wishes span {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            margin: 0 clamp(5px, 1vw, 10px);
+            padding: clamp(5px, 1vw, 10px);
+            display: inline-block;
+            animation: bounce 1s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .wishes span:hover {
+            animation-play-state: paused;
+            transform: rotateY(360deg);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+            animation-delay: 1s;
+        }
+
+        .wish-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: clamp(10px, 2vw, 20px);
+            width: 100%;
+            max-width: 1000px;
+            padding: clamp(10px, 3vw, 20px);
+        }
+
+        @media (min-width: 1200px) {
+            .wish-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .wish-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .wish-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .wish-item {
+            font-size: 1.2rem;
+            opacity: 0;
+            transform: translateX(-50px);
+            animation: slideIn 0.5s ease-out forwards;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .wish-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 1rem;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            color: white;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+            100% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 0, 0, 0.5); }
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 3rem;
+            }
+            .wishes span {
+                font-size: 1.8rem;
+                margin: 0 5px;
+                padding: 5px;
+            }
+            .wish-item {
+                font-size: 1rem;
+            }
+            .wish-card {
+                padding: 12px;
+                margin: 6px;
+                min-height: 70px;
+                width: calc(100% - 12px);
+            }
+            
+            .envelope-content {
+                padding: 15px;
+                width: 90%;
+            }
+            
+            .message-title {
+                font-size: clamp(20px, 4vw, 28px);
+            }
+            
+            .message-subtitle {
+                font-size: clamp(14px, 3vw, 18px);
+            }
+            
+            .modal {
+                width: 90%;
+                padding: 15px;
+            }
+            
+            .modal h2 {
+                font-size: 1.2rem;
+            }
+            
+            .hint {
+                font-size: 0.9rem;
+                bottom: 10px;
+            }
+            
+            .music-control,
+            .fullscreen-btn {
+                padding: 10px;
+                min-width: 36px;
+                min-height: 36px;
+                font-size: 20px;
+            }
+            
+            .wish-list {
+                padding: 0 10px;
+                gap: 0.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+                margin: 0.5rem 0;
+            }
+            
+            .envelope {
+                width: 90%;
+                max-width: 320px;
+            }
+            
+            .envelope-wrapper {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .wishes span {
+                font-size: 1.5rem;
+                margin: 0 3px;
+                padding: 3px;
+            }
+            
+            .wish-card {
+                padding: 10px;
+                margin: 4px;
+                min-height: 60px;
+            }
+            
+            .wish-content {
+                font-size: 0.9rem;
+            }
+            
+            .wish-from {
+                font-size: 0.7em;
+            }
+            
+            .modal h2 {
+                font-size: 1rem;
+            }
+            
+            .modal small {
+                font-size: 0.8rem;
+            }
+            
+            .music-control,
+            .fullscreen-btn {
+                padding: 8px;
+                min-width: 32px;
+                min-height: 32px;
+                font-size: 18px;
+            }
+            
+            .hint {
+                font-size: 0.8rem;
+                bottom: 5px;
+            }
+        }
+
+        @media (max-height: 480px) and (orientation: landscape) {
+            .main-title {
+                font-size: 2rem;
+                margin: 0.5rem 0;
+            }
+            
+            .wishes {
+                margin: 1rem 0;
+            }
+            
+            .wishes span {
+                font-size: 1.2rem;
+            }
+            
+            .wish-list {
+                max-height: 60vh;
+                overflow-y: auto;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                padding: 5px;
+            }
+            
+            .wish-card {
+                flex: 0 0 auto;
+                width: 200px;
+                margin: 5px;
+            }
+            
+            .container {
+                justify-content: flex-start;
+                padding-top: 10px;
+            }
+            
+            .subtitle {
+                margin: 0.3rem 0;
+            }
+            
+            .hint {
+                bottom: 5px;
+            }
+        }
+
+        .wishes span,
+        .wish-card,
+        .main-title,
+        .envelope-content,
+        .music-control,
+        .fullscreen-btn {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .container {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .floating-heart,
+        .firework,
+        .sparkle {
+            will-change: transform;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+
+        .wish-card:active,
+        .wishes span:active,
+        .main-title:active {
+            transform: scale(0.95);
+            transition: transform 0.1s;
+        }
+
+        .love-container {
+            position: fixed;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .floating-heart {
+            position: absolute;
+            font-size: 20px;
+            animation: floatHeart 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+            opacity: 0;
+        }
+
+        .wish-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: clamp(15px, 3vw, 25px);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            line-height: 1.5;
+            transform: perspective(1000px) rotateX(0) rotateY(0);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+
+        .wish-card:hover {
+            transform: perspective(1000px) rotateX(10deg) rotateY(10deg) translateZ(20px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.2),
+                0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .wish-from {
+            font-size: 0.8em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        @keyframes floatHeart {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            10% { transform: scale(1.2) rotate(-20deg); opacity: 1; }
+            50% { transform: scale(1) rotate(10deg); }
+            100% { transform: scale(0) rotate(0deg) translate(0, -100px); opacity: 0; }
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(13, 16, 33, 0.9);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 40px rgba(82, 128, 255, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.2),
+                inset 0 0 30px rgba(82, 128, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            text-align: center;
+            width: min(85%, 420px);
+            backdrop-filter: blur(10px);
+            animation: modalPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            padding: 15px;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                opacity: 0.9; 
+            }
+            50% { 
+                transform: scale(1.1); 
+                opacity: 1; 
+            }
+        }
+
+        .wish-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+            transition: all 0.5s ease;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .wish-card:active::after {
+            width: 300px;
+            height: 300px;
+            margin-left: -150px;
+            margin-top: -150px;
+            opacity: 1;
+        }
+
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            animation: sparkleAnim 1.5s linear forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        .wish-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .wish-card:hover::before {
+            left: 100%;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @keyframes glowing {
+            0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+        }
+
+        .wish-card.active {
+            animation: glowing 2s infinite;
+        }
+
+        .wish-content {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s forwards;
+            animation-delay: calc(var(--index) * 0.1s);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .starry-sky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.3); }
+            50% { opacity: var(--opacity); transform: scale(1); }
+        }
+
+        /* 添加信封样式 */
+        .envelope-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle at center, #ff6b6b, #ff4757);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+
+        /* 信封主体 */
+        .envelope {
+            position: relative;
+            width: clamp(280px, 85vw, 400px);
+            aspect-ratio: 1.6/1;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 60%, #fff5f5 100%);
+            border-radius: clamp(16px, 2vw, 24px);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 10px 30px rgba(255, 0, 0, 0.2),
+                inset 0 2px 10px rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        /* 信封装饰图案 */
+        .envelope::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 50% 0%, rgba(255, 0, 0, 0.1) 0%, transparent 60%),
+                repeating-linear-gradient(45deg, 
+                    transparent 0px, 
+                    transparent 10px, 
+                    rgba(255, 0, 0, 0.05) 10px, 
+                    rgba(255, 0, 0, 0.05) 11px
+                );
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 信封封口 */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(160deg, #fff5f5 0%, #fff 100%);
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: clamp(16px, 2vw, 24px) clamp(16px, 2vw, 24px) 0 0;
+            box-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.1),
+                inset 0 2px 10px rgba(255, 255, 255, 0.8);
+            z-index: 3;
+        }
+
+        /* 信封内容区域 */
+        .envelope-content {
+            position: relative;
+            z-index: 2;
+            padding: clamp(20px, 4vh, 40px);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(15px, 3vh, 25px);
+        }
+
+        /* 信封图标 */
+        .envelope-icon {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            filter: drop-shadow(0 4px 6px rgba(255, 0, 0, 0.3));
+            animation: float 3s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        /* 信封标题 */
+        .envelope-title {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff3333, #ff6666);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.1);
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
+        /* 信封提示 */
+        .envelope-hint {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: #ff6666;
+            opacity: 0.8;
+            animation: pulse 1.5s ease-in-out infinite;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(255, 0, 0, 0.1);
+        }
+
+        /* 信封边缘装饰 */
+        .envelope::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to bottom, 
+                rgba(255, 0, 0, 0.05),
+                transparent
+            );
+        }
+
+        /* 信封交互效果 */
+        .envelope:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.4),
+                0 20px 50px rgba(255, 0, 0, 0.3),
+                inset 0 2px 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .envelope:hover .envelope-flap {
+            transform: rotateX(20deg);
+        }
+
+        /* 信封打开动画 */
+        .envelope.opening {
+            animation: openEnvelope 0.8s ease-in-out forwards;
+        }
+
+        .envelope.opening .envelope-flap {
+            transform: rotateX(-180deg);
+        }
+
+        @keyframes openEnvelope {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1) translateY(-30px) rotate(5deg);
+            }
+            100% {
+                transform: scale(0) translateY(100px) rotate(-20deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .envelope-page.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 模态框样式 */
+        .modal-content {
+            background: rgba(13, 16, 33, 0.85);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 40px rgba(82, 128, 255, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.2),
+                inset 0 0 30px rgba(82, 128, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transform: scale(0.9);
+            opacity: 0;
+            position: relative;
+            width: min(90%, 500px);
+            animation: modalPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        /* 星空背景效果 */
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(1px 1px at 50% 50%, #fff 100%, transparent),
+                radial-gradient(1px 1px at 30% 20%, #fff 100%, transparent),
+                radial-gradient(2px 2px at 70% 60%, rgba(255,255,255,0.8) 100%, transparent);
+            background-size: 100px 100px, 150px 150px, 200px 200px;
+            background-repeat: repeat;
+            opacity: 0.1;
+            animation: twinkle 2s ease-in-out infinite alternate;
+        }
+
+        /* 模态框标题 */
+        .modal-header {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #5280ff, #82a0ff, #ffffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(82, 128, 255, 0.5);
+            position: relative;
+            display: inline-block;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+            padding: 0 2rem;
+        }
+
+        /* 祝福内容 */
+        .modal-wish {
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            color: #fff;
+            line-height: 1.8;
+            margin: 1.5rem auto;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: inset 0 0 20px rgba(82, 128, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            letter-spacing: 1px;
+        }
+
+        /* 装饰元素 */
+        .modal-decoration {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 1.5rem 0 0.5rem;
+            padding: 0 1rem;
+        }
+
+        .decoration-item {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            animation: decorationFloat 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(82, 128, 255, 0.5));
+            transform-style: preserve-3d;
+        }
+
+        /* 遮罩层 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 9998;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 动画效果 */
+        @keyframes modalPop {
+            0% {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes decorationFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0);
+            }
+            50% {
+                transform: translateY(-8px) rotate(5deg);
+            }
+        }
+
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(82, 128, 255, 0.3);
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px rgba(82, 128, 255, 0.6),
+                    0 0 30px rgba(82, 128, 255, 0.4),
+                    0 0 40px rgba(82, 128, 255, 0.2);
+            }
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.05; }
+            100% { opacity: 0.15; }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 1.5rem;
+                width: 92%;
+            }
+            
+            .modal-header {
+                font-size: clamp(1.4rem, 4vw, 1.8rem);
+            }
+            
+            .modal-wish {
+                font-size: clamp(0.9rem, 2.8vw, 1.1rem);
+                padding: 1rem;
+            }
+            
+            .decoration-item {
+                font-size: clamp(1.3rem, 4vw, 1.6rem);
+            }
+        }
+
+        /* 添加加载动画样式 */
+        .loading-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: #fff;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        /* 优化动画性能 */
+        .star, .shooting-star, .firework {
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 添加音乐控制按钮 -->
+    <div class="music-control">🎵</div>
+    
+    <!-- 添加音频元素 -->
+    <audio id="bgMusic" loop>
+        <source src="https://music.163.com/song/media/outer/url?id=1892513656.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 信封界面 -->
+    <div class="envelope-page" id="envelopePage">
+        <div class="envelope" onclick="openEnvelope()">
+            <div class="envelope-pattern"></div>
+            <div class="envelope-flap"></div>
+            <div class="envelope-content">
+                <div class="envelope-icon">✉️</div>
+                <div class="envelope-title">你收到来自好友的祝福</div>
+                <div class="envelope-hint">点击拆开信封</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 保留原有的主界面内容 -->
+    <canvas id="fireworks"></canvas>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+    <!-- <button class="music-control" onclick="toggleMusic()">🎵</button> -->
+    <div class="container">
+        <div class="text-wrapper">
+            <h1 class="main-title" onclick="createSpecialFireworks()">2025</h1>
+            <div class="wishes">
+                <span onclick="createFireworkAt(this)">元</span>
+                <span onclick="createFireworkAt(this)">旦</span>
+                <span onclick="createFireworkAt(this)">快</span>
+                <span onclick="createFireworkAt(this)">乐</span>
+            </div>
+            <p class="subtitle">愿你在新的一年里：</p>
+            <div class="wish-list">
+                <div class="wish-card" onclick="showMessage(this)">
+                    <div class="wish-content">愿你新年的每一天都被温暖环绕，被幸福眷顾 ✨</div>
+                </div>
+                <div class="wish-card" onclick="showMessage(this)">
+                    <div class="wish-content">愿你所有的期待都能成真，所有的努力都会开花 🌟</div>
+                </div>
+                <div class="wish-card" onclick="showMessage(this)">
+                    <div class="wish-content">愿你遇见的每个瞬间都值得珍藏，未来的日子都闪闪发光 ⭐</div>
+                </div>
+                <div class="wish-card" onclick="showMessage(this)">
+                    <div class="wish-content">愿你一切的美好如约而至，所有的梦想都能实现 🎆</div>
+                </div>
+                <div class="wish-card" onclick="showMessage(this)">
+                    <div class="wish-content">愿你的生活充满欢笑，前方总有温暖的光 🌈</div>
+                </div>
+                <div class="wish-card" onclick="showMessage(this)">
+                    <div class="wish-content">愿你遇见更好的自己，成为想要成为的人 💫</div>
+                </div>
+            </div>
+        </div>
+        <div class="hint">点击任意处放烟花 ✨ 点击文字有惊喜！</div>
+    </div>
+
+    <div class="love-container"></div>
+
+    <div class="modal" id="messageModal">
+        <h2 id="modalMessage"></h2>
+    </div>
+
+    <script>
+        class Firework {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.particles = [];
+                this.fireworks = [];
+                this.isMobile = window.innerWidth <= 768;
+                this.resize();
+                
+                window.addEventListener('resize', () => {
+                    this.isMobile = window.innerWidth <= 768;
+                    this.resize();
+                });
+                
+                this.init();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            init() {
+                const interval = this.isMobile ? 2500 : 1500;
+                setInterval(() => {
+                    const x = Math.random() * this.canvas.width;
+                    const targetY = Math.random() * (this.canvas.height * 0.5);
+                    this.createFirework(x, targetY);
+                }, interval);
+                this.animate();
+            }
+
+            createMultipleFireworks(targetX, targetY) {
+                for(let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        this.createFirework(
+                            targetX + (Math.random() - 0.5) * 100,
+                            targetY + (Math.random() - 0.5) * 100
+                        );
+                    }, i * 200);
+                }
+            }
+
+            createFirework(targetX, targetY) {
+                const startX = Math.random() * this.canvas.width;
+                const startY = this.canvas.height;
+                
+                const trail = {
+                    x: startX,
+                    y: startY,
+                    targetX,
+                    targetY,
+                    velocity: this.isMobile ? 12 : 15,
+                    angle: Math.atan2(targetY - startY, targetX - startX),
+                    trailLength: this.isMobile ? 3 : 5,
+                    particles: []
+                };
+                
+                this.fireworks.push(trail);
+            }
+
+            createParticles(x, y, hue) {
+                const particleCount = this.isMobile ? 50 : 100;
+                const particles = [];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const speed = this.isMobile ? 
+                        (1.5 + Math.random() * 3) : 
+                        (2 + Math.random() * 4);
+                    
+                    const velocity = {
+                        x: Math.cos(angle) * speed,
+                        y: Math.sin(angle) * speed
+                    };
+                    
+                    particles.push({
+                        x,
+                        y,
+                        velocity,
+                        hue,
+                        size: this.isMobile ? 
+                            (1.5 + Math.random() * 1.5) : 
+                            (2 + Math.random() * 2),
+                        brightness: 50 + Math.random() * 50,
+                        alpha: 1,
+                        decay: this.isMobile ? 
+                            (0.02 + Math.random() * 0.02) : 
+                            (0.015 + Math.random() * 0.015),
+                        drag: 0.95 + Math.random() * 0.03,
+                        gravity: this.isMobile ? 0.25 : 0.2,
+                        trail: []
+                    });
+                }
+                
+                return particles;
+            }
+
+            explode(x, y) {
+                const hue = Math.random() * 360;
+                const particles = this.createParticles(x, y, hue);
+                this.particles.push(...particles);
+
+                if (!this.isMobile) {
+                    setTimeout(() => {
+                        const secondaryCount = Math.floor(Math.random() * 3) + 1;
+                        for (let i = 0; i < secondaryCount; i++) {
+                            const offset = 50 + Math.random() * 50;
+                            const angle = Math.random() * Math.PI * 2;
+                            const secondaryX = x + Math.cos(angle) * offset;
+                            const secondaryY = y + Math.sin(angle) * offset;
+                            const secondaryParticles = this.createParticles(
+                                secondaryX, 
+                                secondaryY, 
+                                (hue + 30) % 360
+                            );
+                            this.particles.push(...secondaryParticles);
+                        }
+                    }, 100 + Math.random() * 200);
+                }
+            }
+
+            update() {
+                this.fireworks = this.fireworks.filter(fw => {
+                    const dx = fw.targetX - fw.x;
+                    const dy = fw.targetY - fw.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 5) {
+                        this.explode(fw.x, fw.y);
+                        return false;
+                    }
+                    
+                    fw.x += Math.cos(fw.angle) * fw.velocity;
+                    fw.y += Math.sin(fw.angle) * fw.velocity;
+                    
+                    fw.particles.unshift({ x: fw.x, y: fw.y, alpha: 1 });
+                    if (fw.particles.length > fw.trailLength) {
+                        fw.particles.pop();
+                    }
+                    
+                    return true;
+                });
+
+                this.particles = this.particles.filter(p => {
+                    p.velocity.x *= p.drag;
+                    p.velocity.y *= p.drag;
+                    p.velocity.y += p.gravity;
+                    p.x += p.velocity.x;
+                    p.y += p.velocity.y;
+                    p.alpha -= p.decay;
+                    
+                    p.trail.unshift({ x: p.x, y: p.y, alpha: p.alpha });
+                    if (p.trail.length > 5) p.trail.pop();
+                    
+                    return p.alpha > 0.1;
+                });
+            }
+
+            draw() {
+                this.ctx.fillStyle = this.isMobile ? 
+                    'rgba(0, 0, 0, 0.3)' : 
+                    'rgba(0, 0, 0, 0.2)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.fireworks.forEach(fw => {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(fw.x, fw.y);
+                    fw.particles.forEach((p, i) => {
+                        const alpha = p.alpha * (i / fw.particles.length);
+                        this.ctx.strokeStyle = `rgba(255, 220, 180, ${alpha})`;
+                        this.ctx.lineTo(p.x, p.y);
+                    });
+                    this.ctx.stroke();
+                });
+
+                this.particles.forEach(p => {
+                    p.trail.forEach((t, i) => {
+                        const alpha = (i / p.trail.length) * p.alpha;
+                        this.ctx.beginPath();
+                        this.ctx.arc(t.x, t.y, p.size, 0, Math.PI * 2);
+                        this.ctx.fillStyle = `hsla(${p.hue}, 100%, ${p.brightness}%, ${alpha})`;
+                        this.ctx.fill();
+                    });
+                });
+            }
+
+            animate() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        let fireworkInstance;
+        window.onload = () => {
+            fireworkInstance = new Firework(document.getElementById('fireworks'));
+        };
+
+        function createFireworkAt(element) {
+            const rect = element.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            
+            if(fireworkInstance) {
+                fireworkInstance.createMultipleFireworks(x, y);
+                playSound('fireworkSound');
+                createHeart(x, y);
+                createSparkles(x, y);
+            }
+        }
+
+        function createSpecialFireworks() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            const count = Math.min(window.innerWidth / 100, 10);
+            
+            requestAnimationFrame(() => {
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * window.innerWidth;
+                        const y = window.innerHeight * 0.3 + Math.random() * window.innerHeight * 0.3;
+                        createFirework(x, y, colors[Math.floor(Math.random() * colors.length)]);
+                    }, i * 200);
+                }
+            });
+        }
+
+        let isMusicPlaying = false;
+        const bgMusic = document.getElementById('bgMusic');
+
+        function toggleMusic() {
+            const bgMusic = document.getElementById('bgMusic');
+            const musicControl = document.querySelector('.music-control');
+            
+            if (!bgMusic || !musicControl) return;
+            
+            if (bgMusic.paused) {
+                // 如果音乐是暂停状态，则播放
+                bgMusic.play()
+                    .then(() => {
+                        musicControl.innerHTML = '🎶'; // 切换为播放状态图标
+                        isMusicPlaying = true;
+                    })
+                    .catch(error => {
+                        console.log('Music play failed:', error);
+                        musicControl.innerHTML = '🎵'; // 播放失败时保持暂停图标
+                        isMusicPlaying = false;
+                    });
+            } else {
+                // 如果音乐正在播放，则暂停
+                bgMusic.pause();
+                musicControl.innerHTML = '🎵'; // 切换为暂停状态图标
+                isMusicPlaying = false;
+            }
+        }
+
+        function playSound(soundId) {
+            if (soundId === 'fireworkSound') {
+                const randomSound = audioPool[Math.floor(Math.random() * audioPool.length)];
+                randomSound.currentTime = 0;
+                randomSound.volume = 0.4;
+                randomSound.play().catch(() => {});
+            } else {
+                const sound = document.getElementById(soundId);
+                if (sound) {
+                    sound.currentTime = 0;
+                    sound.play().catch(() => {});
+                }
+            }
+        }
+
+        function createHeart(x, y) {
+            const hearts = ['❤️', '💖', '💝', '💕', '💗'];
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = x + 'px';
+            heart.style.top = y + 'px';
+            heart.style.transform = `scale(${Math.random() * 0.5 + 0.5})`;
+            document.querySelector('.love-container').appendChild(heart);
+            
+            heart.addEventListener('animationend', () => {
+                heart.remove();
+            });
+        }
+
+        function showMessage(element) {
+            const rect = element.getBoundingClientRect();
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = event.clientX - rect.left + 'px';
+            ripple.style.top = event.clientY - rect.top + 'px';
+            element.appendChild(ripple);
+            
+            element.classList.add('active');
+            
+            // 创建特效
+            createSpecialEffect(element);
+            playSound('clickSound');
+            
+            // 获取祝福内容
+            const message = element.querySelector('.wish-content').textContent;
+            
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+            
+            // 显示祝福内容
+            const modal = document.getElementById('messageModal');
+            if (modal) {
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">✨ 元旦快乐 ✨</div>
+                        <div class="modal-wish">${message}</div>
+                        <div class="modal-decoration">
+                            <span class="decoration-item">🎊</span>
+                            <span class="decoration-item">🎉</span>
+                            <span class="decoration-item">🎈</span>
+                        </div>
+                    </div>
+                `;
+                
+                requestAnimationFrame(() => {
+                    overlay.classList.add('show');
+                    modal.classList.add('show');
+                });
+                
+                // 点击遮罩层关闭
+                overlay.onclick = () => {
+                    modal.classList.remove('show');
+                    overlay.classList.remove('show');
+                    setTimeout(() => overlay.remove(), 300);
+                };
+            }
+            
+            setTimeout(() => {
+                ripple.remove();
+                element.classList.remove('active');
+            }, 1000);
+        }
+
+        // 添加特殊效果函数
+        function createSpecialEffect(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // 创建烟花效果
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const x = centerX + (Math.random() - 0.5) * 100;
+                    const y = centerY + (Math.random() - 0.5) * 100;
+                    createFirework(x, y, colors[Math.floor(Math.random() * colors.length)]);
+                }, i * 200);
+            }
+            
+            // 创建闪光效果
+            const flash = document.createElement('div');
+            flash.className = 'flash-effect';
+            flash.style.cssText = `
+                position: absolute;
+                left: ${rect.left}px;
+                top: ${rect.top}px;
+                width: ${rect.width}px;
+                height: ${rect.height}px;
+                background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+                pointer-events: none;
+                animation: flashFade 0.5s ease-out forwards;
+                z-index: 1000;
+                border-radius: 50%;
+            `;
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
+        }
+
+        setInterval(createSpecialFireworks, 8000);
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen({ navigationUI: "hide" });
+                document.querySelector('.fullscreen-btn').textContent = '⮌';
+            } else {
+                document.exitFullscreen();
+                document.querySelector('.fullscreen-btn').textContent = '⛶';
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.querySelector('.fullscreen-btn');
+            btn.textContent = document.fullscreenElement ? '⮌' : '⛶';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.container');
+            container.classList.remove('show');
+            createStarrySky();
+            
+            const musicControl = document.querySelector('.music-control');
+            musicControl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMusic();
+            });
+        });
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            return {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            };
+        }
+
+        const fireworkSounds = [
+            'https://assets.mixkit.co/sfx/preview/mixkit-firework-explosion-393.mp3',
+            'https://assets.mixkit.co/sfx/preview/mixkit-fireworks-explosion-394.mp3',
+            'https://assets.mixkit.co/sfx/preview/mixkit-firework-whistle-395.mp3',
+            'https://assets.mixkit.co/sfx/preview/mixkit-short-fireworks-explosion-391.mp3'
+        ];
+
+        const audioPool = fireworkSounds.map(src => {
+            const audio = new Audio(src);
+            audio.preload = 'auto';
+            return audio;
+        });
+
+        function createSparkles(x, y) {
+            const sparkleCount = 6;
+            const sparkles = ['✨', '⭐', '🌟'];
+            
+            for(let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+                sparkle.style.left = x + 'px';
+                sparkle.style.top = y + 'px';
+                sparkle.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => sparkle.remove(), 1500);
+            }
+        }
+
+        document.querySelectorAll('.wish-card').forEach((card, index) => {
+            card.querySelector('.wish-content').style.setProperty('--index', index);
+        });
+
+        function createStarrySky() {
+            const fragment = document.createDocumentFragment();
+            const container = document.createElement('div');
+            container.className = 'starry-sky';
+            
+            const starCount = window.innerWidth <= 768 ? 100 : 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.cssText = `
+                    width: ${Math.random() * 3}px;
+                    height: ${Math.random() * 3}px;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation-duration: ${2 + Math.random() * 3}s;
+                    animation-delay: ${Math.random() * 2}s;
+                    opacity: ${0.5 + Math.random() * 0.5};
+                `;
+                fragment.appendChild(star);
+            }
+            
+            container.appendChild(fragment);
+            document.body.appendChild(container);
+        }
+
+        function createShootingStar() {
+            if (Math.random() > 0.3) return; // 30%的概率创建流星
+            
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+            
+            // 随机起始位置
+            const startX = Math.random() * window.innerWidth;
+            star.style.left = `${startX}px`;
+            star.style.top = '0';
+            
+            // 随机角度和距离
+            const angle = 30 + Math.random() * 30; // 30-60度角
+            const distance = Math.max(window.innerWidth, window.innerHeight);
+            const duration = 1 + Math.random() * 2; // 1-3秒
+            
+            star.style.setProperty('--angle', `${angle}deg`);
+            star.style.setProperty('--distance', `${distance}px`);
+            star.style.setProperty('--duration', `${duration}s`);
+            
+            document.querySelector('.starry-sky').appendChild(star);
+            
+            // 动画结束后移除
+            setTimeout(() => star.remove(), duration * 1000);
+        }
+
+        // 添加流星样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .shooting-star {
+                position: absolute;
+                width: 2px;
+                height: 2px;
+                background: linear-gradient(45deg, #fff, transparent);
+                border-radius: 50%;
+                filter: drop-shadow(0 0 6px #fff);
+                animation: shoot var(--duration) linear forwards;
+            }
+
+            @keyframes shoot {
+                from {
+                    transform: translate(0, 0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translate(
+                        calc(cos(var(--angle)) * var(--distance)),
+                        calc(sin(var(--angle)) * var(--distance))
+                    );
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 添加信封打开函数
+        function openEnvelope() {
+            const envelope = document.querySelector('.envelope');
+            const envelopePage = document.getElementById('envelopePage');
+            const container = document.querySelector('.container');
+            
+            // 播放点击音效
+            playSound('clickSound');
+            
+            // 添加打开动画
+            envelope.classList.add('opening');
+            
+            // 延迟后切换到主界面
+            setTimeout(() => {
+                envelopePage.classList.add('hide');
+                container.classList.add('show');
+                // 尝试播放背景音乐
+                if (!isMusicPlaying) {
+                    toggleMusic();
+                }
+                // 创建特殊烟花效果
+                createSpecialFireworks();
+            }, 800);
+        }
+
+        // 修改初始化代码
+        document.addEventListener('DOMContentLoaded', () => {
+            // 不要自动显示主容器，等待信封打开
+            document.querySelector('.container').classList.remove('show');
+        });
+
+        // 使用 requestAnimationFrame 替代 setInterval
+        function animateFireworks() {
+            requestAnimationFrame(animateFireworks);
+            // 更新烟花位置
+            updateFireworks();
+        }
+
+        // 节流函数
+        function throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        }
+
+        // 优化烟花创建
+        const throttledCreateFirework = throttle((x, y) => {
+            // createFirework(x, y);
+            playSound('fireworkSound');
+        }, 100);
+
+        // 优化特殊烟花效果
+        function createSpecialFireworks() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            const count = Math.min(window.innerWidth / 100, 10);
+            
+            requestAnimationFrame(() => {
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * window.innerWidth;
+                        const y = window.innerHeight * 0.3 + Math.random() * window.innerHeight * 0.3;
+                        // createFirework(x, y, colors[Math.floor(Math.random() * colors.length)]);
+                    }, i * 200);
+                }
+            });
+        }
+
+        // 优化音频资源加载
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffers = new Map();
+
+        async function loadAudio(url) {
+            try {
+                const response = await fetch(url);
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                return audioBuffer;
+            } catch (error) {
+                console.log('Error loading audio:', error);
+                return null;
+            }
+        }
+
+        // 预加载音频
+        async function preloadAudios() {
+            const audioUrls = {
+                bgMusic: 'https://music.163.com/song/media/outer/url?id=1892513656.mp3',
+                clickSound: 'https://assets.mixkit.co/sfx/preview/mixkit-click-melodic-tone-1129.mp3'
+            };
+
+            try {
+                for (const [key, url] of Object.entries(audioUrls)) {
+                    const buffer = await loadAudio(url);
+                    if (buffer) audioBuffers.set(key, buffer);
+                }
+            } catch (error) {
+                console.log('Audio preload error:', error);
+            }
+        }
+
+        // 优化加载动画
+        function showLoadingAnimation() {
+            const loading = document.createElement('div');
+            loading.className = 'loading-animation';
+            loading.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div class="loading-text">加载中...</div>
+            `;
+            document.body.appendChild(loading);
+            return loading;
+        }
+
+        // 优化触摸事件处理
+        function initTouchEvents() {
+            // 处理触摸事件
+            document.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                const touch = e.touches[0];
+                if (e.target.matches('.wish-item')) return;
+                throttledCreateFirework(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            // 处理信封点击
+            const envelope = document.querySelector('.envelope');
+            if (envelope) {
+                envelope.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    openEnvelope();
+                }, { passive: false });
+            }
+
+            // 处理音乐控制
+            const musicControl = document.querySelector('.music-control');
+            if (musicControl) {
+                musicControl.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMusic();
+                }, { passive: false });
+            }
+
+            // 处理祝福文字点击
+            document.querySelectorAll('.wish-item').forEach(item => {
+                item.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showMessage(item);
+                }, { passive: false });
+            });
+        }
+
+        // 修改初始化函数
+        async function initialize() {
+            try {
+                await Promise.all([
+                    preloadAudios(),
+                    new Promise(resolve => {
+                        document.fonts.ready.then(resolve);
+                    })
+                ]);
+                
+                createStarrySky();
+                initializeUI();
+                initTouchEvents(); // 添加触摸事件初始化
+                
+                requestAnimationFrame(animateFireworks);
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // 优化事件监听
+        document.addEventListener('DOMContentLoaded', initialize);
+
+        // 优化点击事件
+        document.addEventListener('click', throttle((e) => {
+            if (e.target.matches('.wish-item')) return;
+            throttledCreateFirework(e.clientX, e.clientY);
+        }, 100));
+
+        document.addEventListener('touchstart', throttle((e) => {
+            if (e.target.matches('.wish-item')) return;
+            const touch = e.touches[0];
+            throttledCreateFirework(touch.clientX, touch.clientY);
+        }, 100), { passive: false });
+
+        // 添加音乐结束事件监听
+        bgMusic.addEventListener('ended', () => {
+            const musicControl = document.querySelector('.music-control');
+            if (musicControl) {
+                musicControl.textContent = '🎵';
+            }
+            isMusicPlaying = false;
+        });
+    </script>
+</body>
+</html> 

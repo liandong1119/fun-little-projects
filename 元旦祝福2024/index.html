@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元旦快乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a0f1f 0%, #30122f 50%, #1a0f1f 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        #textCanvas {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            filter: drop-shadow(0 0 15px rgba(255, 51, 51, 0.8));
+        }
+
+        .countdown {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff3333;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 3;
+            text-shadow: 0 0 10px #ff3333;
+        }
+
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 3;
+            background: none;
+            border: 2px solid #ff3333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            color: #ff3333;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .music-control:hover {
+            background: #ff3333;
+            color: #fff;
+        }
+
+        /* 添加光晕效果 */
+        .glow {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255,51,51,0.1) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <canvas id="textCanvas"></canvas>
+    <div class="countdown"></div>
+    <button class="music-control" onclick="toggleMusic()">🎵</button>
+    <audio id="bgMusic" loop>
+        <source src="assets/music/new-year.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="glow"></div>
+
+    <script>
+        // Matrix效果
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = 'LOVE元旦快乐 2025❤️';
+        const fontSize = 20;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255, 51, 51, 0.5)';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        // 文字粒子效果
+        const textCanvas = document.getElementById('textCanvas');
+        const textCtx = textCanvas.getContext('2d');
+
+        textCanvas.width = window.innerWidth;
+        textCanvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, targetX, targetY) {
+                this.x = Math.random() * textCanvas.width;
+                this.y = Math.random() * textCanvas.height;
+                this.size = 5;
+                this.baseX = targetX;
+                this.baseY = targetY;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.speed = 0.15;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spinSpeed = 0.15;
+                this.scale = 0;
+                this.targetScale = 1;
+                this.color = `hsl(${Math.random() * 30 + 350}, 100%, 50%)`;
+                this.rotationAngle = 0;
+                this.orbitRadius = 0;
+                this.orbitSpeed = Math.random() * 0.02 + 0.01;
+                this.inOrbit = false;
+            }
+
+            update() {
+                if (this.inOrbit) {
+                    // 轨道运动
+                    this.rotationAngle += this.orbitSpeed;
+                    this.x = this.targetX + Math.cos(this.rotationAngle) * this.orbitRadius;
+                    this.y = this.targetY + Math.sin(this.rotationAngle) * this.orbitRadius;
+                    this.scale = this.targetScale;
+                } else {
+                    // 直线运动
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    this.x += dx * this.speed;
+                    this.y += dy * this.speed;
+                    this.scale += (this.targetScale - this.scale) * 0.1;
+                }
+                
+                this.angle += this.spinSpeed;
+            }
+
+            draw() {
+                textCtx.save();
+                textCtx.translate(this.x, this.y);
+                textCtx.rotate(this.angle);
+                textCtx.scale(this.scale, this.scale);
+                
+                const gradient = textCtx.createLinearGradient(-this.size, -this.size, this.size, this.size);
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(1, `hsl(${Math.random() * 30 + 350}, 100%, 70%)`);
+                textCtx.fillStyle = gradient;
+                
+                textCtx.shadowColor = this.color;
+                textCtx.shadowBlur = 10;
+                textCtx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                textCtx.restore();
+            }
+        }
+
+        let particles = [];
+        const messages = [
+            "岁月如歌",
+            "时光如梭",
+            "在这美好时刻",
+            "愿你所愿",
+            "皆能如约而至",
+            "元旦快乐",
+            "❤️"
+        ];
+        let currentMessage = 0;
+
+        function createParticles(text) {
+            particles = [];
+            textCtx.font = 'bold 160px "Microsoft YaHei"';
+            textCtx.fillStyle = 'white';
+            textCtx.strokeStyle = 'rgba(255,51,51,0.5)';
+            textCtx.lineWidth = 3;
+            textCtx.textAlign = 'center';
+            textCtx.textBaseline = 'middle';
+
+            const centerX = textCanvas.width / 2;
+            const centerY = textCanvas.height / 2;
+            
+            // 添加描边效果
+            textCtx.strokeText(text, centerX, centerY);
+            textCtx.fillText(text, centerX, centerY);
+
+            const pixels = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
+            textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+
+            for (let y = 0; y < textCanvas.height; y += 6) {
+                for (let x = 0; x < textCanvas.width; x += 6) {
+                    const index = (y * textCanvas.width + x) * 4;
+                    const alpha = pixels[index + 3];
+                    if (alpha > 128) {
+                        particles.push(new Particle(x, y, x, y));
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            // 检查是否所有粒子都接近目标位置
+            const allSettled = particles.every(particle => {
+                if (particle.inOrbit) return true;
+                const dx = particle.targetX - particle.x;
+                const dy = particle.targetY - particle.y;
+                return Math.sqrt(dx * dx + dy * dy) < 1;
+            });
+
+            if (allSettled && Math.random() < 0.01) {
+                disperseParticles();
+            }
+        }
+
+        function disperseParticles() {
+            const centerX = textCanvas.width / 2;
+            const centerY = textCanvas.height / 2;
+
+            particles.forEach(particle => {
+                particle.inOrbit = true;
+                particle.targetX = centerX;
+                particle.targetY = centerY;
+                particle.orbitRadius = Math.random() * 200 + 100;
+                particle.rotationAngle = Math.random() * Math.PI * 2;
+                particle.targetScale = 0.5;
+            });
+
+            setTimeout(() => {
+                currentMessage = (currentMessage + 1) % messages.length;
+                reformParticles(messages[currentMessage]);
+            }, 1000);
+        }
+
+        function reformParticles(text) {
+            textCtx.font = 'bold 160px "Microsoft YaHei"';
+            textCtx.fillStyle = 'white';
+            textCtx.textAlign = 'center';
+            textCtx.textBaseline = 'middle';
+
+            const centerX = textCanvas.width / 2;
+            const centerY = textCanvas.height / 2;
+            
+            textCtx.fillText(text, centerX, centerY);
+            const pixels = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
+            textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+
+            const positions = [];
+            for (let y = 0; y < textCanvas.height; y += 6) {
+                for (let x = 0; x < textCanvas.width; x += 6) {
+                    const index = (y * textCanvas.width + x) * 4;
+                    const alpha = pixels[index + 3];
+                    if (alpha > 128) {
+                        positions.push({x, y});
+                    }
+                }
+            }
+
+            particles.forEach((particle, i) => {
+                if (i < positions.length) {
+                    particle.inOrbit = false;
+                    particle.targetX = positions[i].x;
+                    particle.targetY = positions[i].y;
+                    particle.targetScale = 1;
+                } else {
+                    particle.targetScale = 0;
+                }
+            });
+
+            if (particles.length < positions.length) {
+                for (let i = particles.length; i < positions.length; i++) {
+                    particles.push(new Particle(
+                        centerX,
+                        centerY,
+                        positions[i].x,
+                        positions[i].y
+                    ));
+                }
+            }
+        }
+
+        // 倒计时
+        function updateCountdown() {
+            const now = new Date();
+            const newYear = new Date('2024-01-01T00:00:00');
+            const diff = newYear - now;
+
+            if (diff <= 0) {
+                document.querySelector('.countdown').innerHTML = "元旦快乐！";
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.querySelector('.countdown').innerHTML = 
+                `距离2024年元旦还有：${days}天${hours}时${minutes}分${seconds}秒`;
+        }
+
+        // 音乐控制
+        let isPlaying = false;
+        const music = document.getElementById('bgMusic');
+
+        function toggleMusic() {
+            if (isPlaying) {
+                music.pause();
+                document.querySelector('.music-control').innerHTML = '🔇';
+            } else {
+                music.play();
+                document.querySelector('.music-control').innerHTML = '🎵';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // 初始化和动画循环
+        function animate() {
+            drawMatrix();
+            animateParticles();
+            requestAnimationFrame(animate);
+        }
+
+        createParticles(messages[currentMessage]);
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+        animate();
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            textCanvas.width = window.innerWidth;
+            textCanvas.height = window.innerHeight;
+            createParticles(messages[currentMessage]);
+        });
+    </script>
+</body>
+</html> 
